@@ -2593,6 +2593,7 @@ class TestFreshnessDateDataParser(BaseTestCase):
             # Day of a relative month
             param("the 1st of last month", date(2010, 5, 1), time(13, 15)),
             param("the 1st of this month", date(2010, 6, 1), time(13, 15)),
+            param("the 1st of the month", date(2010, 6, 1), time(13, 15)),
             param("30th of next month at 5pm", date(2010, 7, 30), time(17, 0)),
         ]
     )
