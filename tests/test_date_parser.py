@@ -575,6 +575,8 @@ class TestDateParser(BaseTestCase):
                 "Unable to parse: 8",
             ),
             param("12/09/18567", "Unable to parse: 18567"),
+            param("6/4/25 7", "Unable to parse: 7"),
+            param("6/4/25 2575", "25:75 does not seem to be a valid time string"),
         ]
     )
     def test_dates_not_parsed(self, date_string, message):
@@ -878,6 +880,27 @@ class TestDateParser(BaseTestCase):
         self.then_date_was_parsed_by_date_parser()
         self.then_date_obj_exactly_is(datetime(2012, 4, 24))
 
+    @parameterized.expand(
+        [
+            param(prefer_dates_from="past", expected=datetime(2015, 2, 9)),
+            param(prefer_dates_from="future", expected=datetime(2015, 2, 16)),
+        ]
+    )
+    def test_that_day_and_month_preferences_do_not_affect_weekdays(
+        self, prefer_dates_from, expected
+    ):
+        self.given_parser(
+            settings={
+                "PREFER_DATES_FROM": prefer_dates_from,
+                "PREFER_DAY_OF_MONTH": "first",
+                "PREFER_MONTH_OF_YEAR": "current",
+                "RELATIVE_BASE": datetime(2015, 2, 12),
+            }
+        )
+        self.when_date_is_parsed("Monday")
+        self.then_date_was_parsed_by_date_parser()
+        self.then_date_obj_exactly_is(expected)
+
     def test_date_is_parsed_when_skip_tokens_are_supplied(self):
         self.given_parser(
             settings={"SKIP_TOKENS": ["de"], "RELATIVE_BASE": datetime(2015, 2, 12)}
@@ -1177,6 +1200,10 @@ class TestDateParser(BaseTestCase):
                 "Sunday 23 May 1856 12:09:08 AM",
                 expected=datetime(1856, 5, 23, 0, 9, 8),
                 order="DMY",
+            ),
+            param("6/4/25 0730", expected=datetime(2025, 4, 6, 7, 30), order="DMY"),
+            param(
+                "6 April 2025 2030", expected=datetime(2025, 4, 6, 20, 30), order="DMY"
             ),
         ]
     )

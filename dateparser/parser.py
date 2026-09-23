@@ -360,6 +360,17 @@ class _parser:
                     self.time = lambda: time_parser(self._token_time)
                     continue
 
+                if (
+                    type == 0
+                    and len(token) == 4
+                    and all((self.day, self.month, self.year))
+                ):
+                    # A 4-digit number after a complete date is a time without
+                    # a separator, e.g. 0730 in "6/4/25 0730".
+                    self._token_time = f"{token[:2]}:{token[2:]}"
+                    self.time = lambda: time_parser(self._token_time)
+                    continue
+
             results = self._parse(type, token, skip_component=skip_component)
             for res in results:
                 if len(token) == 4 and res[0] == "year":
